@@ -96,6 +96,41 @@ agent = FrozenAgent(
 
 
 
+
+'''
+# @title Políticas del agente
+
+# actions
+LEFT, DOWN, RIGHT, UP = 0,1,2,3
+
+# Política epsilon-soft. Se usa para el entrenamiento
+def random_epsilon_greedy_policy(Q, epsilon, state, nA):
+    pi_A = np.ones(nA, dtype=float) * epsilon / nA
+    best_action = np.argmax(Q[state])
+    pi_A[best_action] += (1.0 - epsilon)
+    return pi_A
+
+# Política epsilon-greedy a partir de una epsilon-soft
+def epsilon_greedy_policy(Q, epsilon, state, nA):
+    pi_A = random_epsilon_greedy_policy(Q, epsilon, state, nA)
+    return np.random.choice(np.arange(nA), p=pi_A)
+
+# Política Greedy a partir de los valones Q. Se usa para mostrar la solución.
+def pi_star_from_Q(env, Q):
+    done = False
+    pi_star = np.zeros([env.observation_space.n, env.action_space.n])
+    state, info = env.reset() # start in top-left, = 0
+    actions = ""
+    while not done:
+        action = np.argmax(Q[state, :])
+        actions += f"{action}, "
+        pi_star[state,action] = action
+        state, reward, terminated, truncated, info = env.step(action)
+        done = terminated or truncated
+    return pi_star, actions
+'''
+
+
 env = gym.wrappers.RecordEpisodeStatistics(env, buffer_length=n_episodes)
 for episode in tqdm(range(n_episodes)):
     obs, info = env.reset()
@@ -153,7 +188,7 @@ plt.show()
 
 
 
-
+'''
 def on_policy_all_visit(env, num_episodes=5000, epsilon=0.4, decay=False, discount_factor=1):
   # Matriz de valores  Q
   nA = env.action_space.n
@@ -198,3 +233,55 @@ def on_policy_all_visit(env, num_episodes=5000, epsilon=0.4, decay=False, discou
           print(f"success: {stats/t}, epsilon: {epsilon}")
 
   return Q, list_stats
+'''
+
+'''
+# @title Funciones para mostrar los resultados
+
+def plot(list_stats):
+  # Creamos una lista de índices para el eje x
+  indices = list(range(len(list_stats)))
+
+  # Creamos el gráfico
+  plt.figure(figsize=(6, 3))
+  plt.plot(indices, list_stats)
+
+  # Añadimos título y etiquetas
+  plt.title('Proporción de recompensas')
+  plt.xlabel('Episodio')
+  plt.ylabel('Proporción')
+
+  # Mostramos el gráfico
+  plt.grid(True)
+  plt.show()
+
+# Define la función para mostrar el tamaño de los episodios
+# Pon aquí tu código.
+'''
+
+
+
+'''
+# @title Aprendizaje
+Q, list_stats = on_policy_all_visit(env4, num_episodes=50000, epsilon=0.4, discount_factor=1)
+
+
+#@title Proporción de aciertos por número de episodios
+
+plot(list_stats)
+print(f"Máxima proporcion: {list_stats[-1]}")
+
+
+# @title Tabla de valores Q
+LEFT, DOWN, RIGHT, UP = 0,1,2,3
+print("Valores Q para cada estado:\n", Q)
+
+
+
+# @title Política final
+LEFT, DOWN, RIGHT, UP = 0,1,2,3
+pi, actions = pi_star_from_Q(env4, Q)
+
+print("Política óptima obtenida\n", pi, f"\n Acciones {actions} \n Para el siguiente grid\n", env4.render())
+print()
+'''
