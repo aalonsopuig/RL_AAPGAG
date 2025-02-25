@@ -1,14 +1,12 @@
 from __future__ import annotations
-
 from collections import defaultdict
-
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from matplotlib.patches import Patch
 from tqdm import tqdm
-
 import gymnasium as gym
+
 
 class FrozenAgentBasic:
     def __init__(
@@ -81,57 +79,21 @@ class FrozenAgentGreedy:
     def __init__(
         self,
         env,
-        learning_rate: float,
-		initial_epsilon: float,
-        epsilon_decay: float,
-        final_epsilon: float,
+		epsilon: float,
         discount_factor: float = 0.95,
     ):
-        """Initialize a Reinforcement Learning agent with an empty dictionary
-        of state-action values (q_values), a learning rate and an epsilon.
-
+        """
         Args:
-            learning_rate: The learning rate
-            initial_epsilon: The initial epsilon value
-            epsilon_decay: The decay for epsilon
-            final_epsilon: The final epsilon value
+            epsilon: The initial epsilon value
             discount_factor: The discount factor for computing the Q-value
         """
-        
-        # Matriz de valores  Q
-        self.nA = env.action_space.n
-        self.Q = np.zeros([env.observation_space.n, self.nA])
+        #almacenamos los valores iniciales
+        self._epsilon = epsilon
+        self._discount_factor = discount_factor
+        self.env = env
 
-        # Número de visitas. Vamos a realizar la versión incremental.
-        self.n_visits = np.zeros([env.observation_space.n, self.nA])
-
-        
-        self.q_values = defaultdict(lambda: np.zeros(self.nA))
-
-        self.lr = learning_rate
-        self.discount_factor = discount_factor
-
-        #parametros del epsilon greedy y su decaimiento
-        self.initial_epsilon = initial_epsilon
-        self.epsilon = initial_epsilon
-        self.epsilon_decay = epsilon_decay
-        self.final_epsilon = final_epsilon
-
-        self.training_error = []
-        
-        #para hacer trackiong del episodio
-        self.episode=[]
-        self.result_sum=0.0
-        self.factor=1.0
-
-        # Para mostrar la evolución en el terminal y algún dato que mostrar
-        self.stats = 0.0
-        self.list_stats = [self.stats]
-#        self.step_display = num_episodes / 10
-		
-        
-        #para hacer tracking del total de episodios
-        self.numEpisodes=0
+        #incializo el agente con estos parametros
+        self.initAgent()
 
     def get_action(self, env, state: tuple[int]) -> int:
         """
@@ -141,21 +103,14 @@ class FrozenAgentGreedy:
         
         return self.epsilon_greedy_policy(state)        
 
-    def updateStep(
-        self,
-        state: tuple[int],
-        action: int,
-        reward: float,
-        terminated: bool,
-        next_state: tuple[int],
-    ):
-        """Updates the Q-value of an action."""
+    def updateStep(self, state: tuple[int], action: int, reward: float, terminated: bool, next_state: tuple[int]):
+        """Actualiza a nivel de step"""
         self.episode.append((state, action))
         self.result_sum += self.factor * reward
         self.factor *= self.discount_factor
-        self.training_error.append(self.factor * reward)
 
     def updateEpisode(self):
+        """Actualiza a nivel de episodio"""
         for (state, action) in self.episode:
             self.n_visits[state, action] += 1.0
             alpha = 1.0 / self.n_visits[state, action]
@@ -165,7 +120,33 @@ class FrozenAgentGreedy:
         self.list_stats.append(self.stats/(self.numEpisodes+1))
         self.numEpisodes += 1
 
+    def initAgent(self):
+        #inicializa el agente con la configuración inicial
+        #parametros del epsilon greedy y su decaimiento
+        self.epsilon = self._epsilon
+        self.discount_factor = self._discount_factor
+        
+        # Matriz de valores  Q
+        self.nA = self.env.action_space.n
+        self.Q = np.zeros([self.env.observation_space.n, self.nA])
+
+        # Número de visitas. Vamos a realizar la versión incremental.
+        self.n_visits = np.zeros([self.env.observation_space.n, self.nA])
+        
+        #para hacer trackiong del episodio
+        self.episode=[]
+        self.result_sum=0.0
+        self.factor=1.0
+
+        # Para mostrar la evolución en el terminal y algún dato que mostrar
+        self.stats = 0.0
+        self.list_stats = [self.stats]
+        
+        #para hacer tracking del total de episodios
+        self.numEpisodes=0
+
     def initEpisode(self):
+        #Inicializa el agente con unnuevo episodio
         self.episode=[]
         self.result_sum=0.0
         self.factor=1.0

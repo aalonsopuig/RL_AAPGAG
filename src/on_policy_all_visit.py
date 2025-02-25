@@ -1,26 +1,15 @@
-# Author: Till Zemann
-# License: MIT License
-
 from __future__ import annotations
-
 from collections import defaultdict
-
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-from matplotlib.patches import Patch
 from tqdm import tqdm
-
 import gymnasium as gym
-
 import FrozenAgent
-
 import random
 
 
 semilla=100
-random.seed(semilla)
-np.random.seed(semilla)
 
 
 
@@ -36,11 +25,6 @@ np.random.seed(semilla)
 #!apt install swig
 #!pip install gymnasium[box2d]
 
-#@title Importamos librerias
-import numpy as np
-import matplotlib.pyplot as plt
-from tqdm import tqdm
-import gymnasium as gym
 '''
 
 
@@ -52,11 +36,17 @@ env8 = gym.make(name, is_slippery=False, map_name="8x8", render_mode="ansi") # N
 
 #env = gym.wrappers.RecordEpisodeStatistics(env, buffer_length=n_episodes)
 
-def on_policy_all_visit(agent, env, num_episodes=5000, epsilon=0.4, decay=False, discount_factor=1):
+
+
+def setSemilla(semilla):
+    random.seed(semilla)
+    np.random.seed(semilla)
+
+def on_policy_all_visit(agent, env, num_episodes=5000, decay=False, semilla=1):
+    agent.initAgent()
     for episode in tqdm(range(n_episodes)):
         state, info = env.reset(seed=semilla)
         done = False
-#        print("========================INIT",state,info)
     
         #inicializo el episodio
         agent.initEpisode()
@@ -67,7 +57,6 @@ def on_policy_all_visit(agent, env, num_episodes=5000, epsilon=0.4, decay=False,
                 agent.decay_epsilon()
             action = agent.get_action(env, state)
             next_state, reward, terminated, truncated, info = env.step(action)
- #           print(action,next_state, reward, terminated, truncated, info)
 
             # update the agent
             agent.updateStep(state, action, reward, terminated, next_state)
@@ -99,40 +88,27 @@ def plot(list_stats):
   plt.show()
 
 
-
-
-semilla=100
-random.seed(semilla)
-np.random.seed(semilla)
-
+#inicializo los numeros aleatorios
+setSemilla(semilla)
 
 # hyperparameters
-learning_rate = 0.01
 n_episodes = 50000
 start_epsilon = 0.4
-epsilon_decay = start_epsilon / (n_episodes / 2)  # reduce the exploration over time
-final_epsilon = 0.1
 discount_factor = 1.0
 
 agent4 = FrozenAgent.FrozenAgentGreedy(
     env=env4,
-    learning_rate=learning_rate,
-    initial_epsilon=start_epsilon,
-    epsilon_decay=epsilon_decay,
-    final_epsilon=final_epsilon,
+    epsilon=start_epsilon,
     discount_factor=discount_factor,
 )
 
-Q, list_stats = on_policy_all_visit(agent4, env4, num_episodes=50000, epsilon=0.4, discount_factor=1)
+Q, list_stats = on_policy_all_visit(agent4, env4, num_episodes=50000, decay=False, semilla=semilla)
 
 plot(agent4.list_stats)
 print(f"Máxima proporcion: {agent4.list_stats[-1]}")
 
-
 LEFT, DOWN, RIGHT, UP = 0,1,2,3
 print("Valores Q para cada estado:\n", agent4.Q)
-
-
 
 LEFT, DOWN, RIGHT, UP = 0,1,2,3
 pi, actions = agent4.pi_star_from_Q(env4, agent4.Q)
@@ -141,44 +117,29 @@ print("Política óptima obtenida\n", pi, f"\n Acciones {actions} \n Para el sig
 print()
 
 
+#ahora entrenamos con el mapa de 8x8
 
-
-semilla=100
-random.seed(semilla)
-np.random.seed(semilla)
-
-
-
-env = env8
-
+#inicializo los numeros aleatorios
+setSemilla(semilla)
 
 # hyperparameters
-learning_rate = 0.01
 n_episodes = 50000
 start_epsilon = 0.4
-epsilon_decay = start_epsilon / (n_episodes / 2)  # reduce the exploration over time
-final_epsilon = 0.1
 discount_factor = 1.0
 
 agent8 = FrozenAgent.FrozenAgentGreedy(
     env=env8,
-    learning_rate=learning_rate,
-    initial_epsilon=start_epsilon,
-    epsilon_decay=epsilon_decay,
-    final_epsilon=final_epsilon,
+    epsilon=start_epsilon,
     discount_factor=discount_factor,
 )
 
-
-Q, list_stats = on_policy_all_visit(agent8, env8, num_episodes=n_episodes, epsilon=0.4, decay=True, discount_factor=1)
-
+Q, list_stats = on_policy_all_visit(agent8, env8, num_episodes=n_episodes, decay=True, semilla=semilla)
 
 plot(agent8.list_stats)
 print(f"Máxima proporcion: {agent8.list_stats[-1]}")
      
 LEFT, DOWN, RIGHT, UP = 0,1,2,3
 print("Valores Q para cada estado:\n", agent8.Q)
-
 
 LEFT, DOWN, RIGHT, UP = 0,1,2,3
 pi, actions = agent8.pi_star_from_Q(env8, agent8.Q)
