@@ -67,26 +67,35 @@ def on_policy_all_visit(agent, env, num_episodes=5000, decay=False, semilla=1):
 
         #después de acabar el episodio actualizo la Q y el epsilon
         agent.updateEpisode()
-    return agent.Q, agent.list_stats
 
 
-def plot(list_stats):
+def plot(agent):
   # Creamos una lista de índices para el eje x
-  indices = list(range(len(list_stats)))
+  indices = list(range(len(agent.list_stats)))
+  
+  
+  # Crear figura con dos subgráficos
+  fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6))
 
-  # Creamos el gráfico
-  plt.figure(figsize=(6, 3))
-  plt.plot(indices, list_stats)
+  # Primer subplot
+  ax1.plot(indices, agent.list_stats, label='stats')
+  ax1.set_title('Proporción de recompensas')
+  ax1.set_xlabel('Episodio')
+  ax1.set_ylabel('Proporción')
+  ax1.legend()
+  ax1.grid(True)
 
-  # Añadimos título y etiquetas
-  plt.title('Proporción de recompensas')
-  plt.xlabel('Episodio')
-  plt.ylabel('Proporción')
+  # Segundo subplot
+  ax2.plot(indices, agent.list_episodes, label='episodios')
+  ax2.set_title('Tamaño de episodios')
+  ax2.set_xlabel('Episodio')
+  ax2.set_ylabel('Tamaño')
+  ax2.legend()
+  ax2.grid(True)
 
-  # Mostramos el gráfico
-  plt.grid(True)
-  plt.show()
-
+  # Ajustar diseño y mostrar gráfico
+  plt.tight_layout()
+  plt.show()  
 
 #inicializo los numeros aleatorios
 setSemilla(semilla)
@@ -102,9 +111,10 @@ agent4 = FrozenAgent.FrozenAgentGreedy(
     discount_factor=discount_factor,
 )
 
-Q, list_stats = on_policy_all_visit(agent4, env4, num_episodes=50000, decay=False, semilla=semilla)
+on_policy_all_visit(agent4, env4, num_episodes=50000, decay=False, semilla=semilla)
 
-plot(agent4.list_stats)
+
+plot(agent4)
 print(f"Máxima proporcion: {agent4.list_stats[-1]}")
 
 LEFT, DOWN, RIGHT, UP = 0,1,2,3
@@ -133,9 +143,9 @@ agent8 = FrozenAgent.FrozenAgentGreedy(
     discount_factor=discount_factor,
 )
 
-Q, list_stats = on_policy_all_visit(agent8, env8, num_episodes=n_episodes, decay=True, semilla=semilla)
+on_policy_all_visit(agent8, env8, num_episodes=n_episodes, decay=True, semilla=semilla)
 
-plot(agent8.list_stats)
+plot(agent8)
 print(f"Máxima proporcion: {agent8.list_stats[-1]}")
      
 LEFT, DOWN, RIGHT, UP = 0,1,2,3

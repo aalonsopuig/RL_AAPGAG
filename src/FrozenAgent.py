@@ -118,6 +118,7 @@ class FrozenAgentGreedy:
         # Guardamos datos sobre la evolución
         self.stats += self.result_sum
         self.list_stats.append(self.stats/(self.numEpisodes+1))
+        self.list_episodes.append(len(self.episode))
         self.numEpisodes += 1
 
     def initAgent(self):
@@ -141,6 +142,7 @@ class FrozenAgentGreedy:
         # Para mostrar la evolución en el terminal y algún dato que mostrar
         self.stats = 0.0
         self.list_stats = [self.stats]
+        self.list_episodes = [self.stats]
         
         #para hacer tracking del total de episodios
         self.numEpisodes=0
