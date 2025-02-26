@@ -105,7 +105,7 @@ n_episodes = 50000
 start_epsilon = 0.4
 discount_factor = 1.0
 
-agent4 = FrozenAgent.FrozenAgentGreedy(
+agent4 = FrozenAgent.FrozenAgentMC(
     env=env4,
     epsilon=start_epsilon,
     discount_factor=discount_factor,
@@ -126,7 +126,7 @@ pi, actions = agent4.pi_star_from_Q(env4, agent4.Q)
 print("Política óptima obtenida\n", pi, f"\n Acciones {actions} \n Para el siguiente grid\n", env4.render())
 print()
 
-
+exit()
 #ahora entrenamos con el mapa de 8x8
 
 #inicializo los numeros aleatorios
