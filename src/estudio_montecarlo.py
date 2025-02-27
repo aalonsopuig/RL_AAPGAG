@@ -44,7 +44,7 @@ def setSemilla(semilla):
 
 def train_agent(agent, env, num_episodes=5000, decay=False, semilla=1):
     agent.initAgent()
-    for episode in tqdm(range(n_episodes)):
+    for episode in tqdm(range(num_episodes)):
         state, info = env.reset(seed=semilla)
         done = False
     
@@ -67,7 +67,6 @@ def train_agent(agent, env, num_episodes=5000, decay=False, semilla=1):
 
         #después de acabar el episodio actualizo la Q y el epsilon
         agent.updateEpisode()
-
 
 def plot(agent):
   # Creamos una lista de índices para el eje x
@@ -105,13 +104,14 @@ n_episodes = 50000
 start_epsilon = 0.4
 discount_factor = 1.0
 
-agent4 = FrozenAgent.FrozenAgentMC(
+agent4 = FrozenAgent.FrozenAgentMC_On_First(
+#agent4 = FrozenAgent.FrozenAgentGreedy(
     env=env4,
     epsilon=start_epsilon,
     discount_factor=discount_factor,
 )
 
-train_agent(agent4, env4, num_episodes=50000, decay=False, semilla=semilla)
+train_agent(agent4, env4, num_episodes=n_episodes, decay=False, semilla=semilla)
 
 
 plot(agent4)
@@ -119,6 +119,7 @@ print(f"Máxima proporcion: {agent4.list_stats[-1]}")
 
 LEFT, DOWN, RIGHT, UP = 0,1,2,3
 print("Valores Q para cada estado:\n", agent4.Q)
+print("Valores pi para cada estado:\n", agent4.policy)
 
 LEFT, DOWN, RIGHT, UP = 0,1,2,3
 pi, actions = agent4.pi_star_from_Q(env4, agent4.Q)
@@ -126,7 +127,7 @@ pi, actions = agent4.pi_star_from_Q(env4, agent4.Q)
 print("Política óptima obtenida\n", pi, f"\n Acciones {actions} \n Para el siguiente grid\n", env4.render())
 print()
 
-exit()
+#exit()
 #ahora entrenamos con el mapa de 8x8
 
 #inicializo los numeros aleatorios

@@ -269,6 +269,6 @@ class FrozenAgentMC:
 
 # Uso del agente en un entorno de ejemplo
 env = gym.make("FrozenLake-v1", is_slippery=False)
-agent = FrozenAgentMC1(env, epsilon=0.1)
+agent = FrozenAgentMC1(env, epsilon=0.4)
 agent.train(5000)
 print(agent.Q,agent.policy)
