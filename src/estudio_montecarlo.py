@@ -7,7 +7,7 @@ from tqdm import tqdm
 import gymnasium as gym
 import FrozenAgent
 import random
-
+import time
 
 semilla=100
 
@@ -36,7 +36,9 @@ env8 = gym.make(name, is_slippery=False, map_name="8x8", render_mode="ansi") # N
 
 #env = gym.wrappers.RecordEpisodeStatistics(env, buffer_length=n_episodes)
 
-
+ts1=[]
+ts2=[]
+ts3=[]
 
 def setSemilla(semilla):
     random.seed(semilla)
@@ -48,6 +50,7 @@ def train_agent(agent, env, num_episodes=5000, decay=False, semilla=1):
         state, info = env.reset(seed=semilla)
         done = False
     
+        start_time=time.time_ns()
         #inicializo el episodio
         agent.initEpisode()
     
@@ -64,9 +67,15 @@ def train_agent(agent, env, num_episodes=5000, decay=False, semilla=1):
             # update if the environment is done and the current state
             done = terminated or truncated
             state = next_state
+        t1 = time.time_ns()
 
         #después de acabar el episodio actualizo la Q y el epsilon
         agent.updateEpisode()
+        
+        t2 = time.time_ns()
+        ts1.append((t2-start_time)/1000)
+        ts2.append((t1-start_time)/1000)
+        ts3.append((t2-t1)/1000)
 
 def plot(agent):
   # Creamos una lista de índices para el eje x
@@ -104,11 +113,14 @@ n_episodes = 50000
 start_epsilon = 0.4
 discount_factor = 1.0
 
-agent4 = FrozenAgent.FrozenAgentMC_On_First(
+#agent4 = FrozenAgent.FrozenAgentMC_On_All(
+#agent4 = FrozenAgent.FrozenAgentMC_On_First(
 #agent4 = FrozenAgent.FrozenAgentGreedy(
+agent4 = FrozenAgent.FrozenAgentMC_Off_All(
     env=env4,
     epsilon=start_epsilon,
     discount_factor=discount_factor,
+    p=0.1
 )
 
 train_agent(agent4, env4, num_episodes=n_episodes, decay=False, semilla=semilla)
@@ -127,7 +139,21 @@ pi, actions = agent4.pi_star_from_Q(env4, agent4.Q)
 print("Política óptima obtenida\n", pi, f"\n Acciones {actions} \n Para el siguiente grid\n", env4.render())
 print()
 
-#exit()
+
+fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(8, 6))
+
+# Primer subplot
+ax1.plot(np.arange(len(ts1)),ts1, label='ts1')
+ax1.grid(True)
+ax2.plot(np.arange(len(ts2)),ts2, label='ts2')
+ax2.grid(True)
+ax3.plot(np.arange(len(ts3)),ts3, label='ts3')
+ax3.grid(True)
+plt.tight_layout()
+plt.show()  
+
+
+exit()
 #ahora entrenamos con el mapa de 8x8
 
 #inicializo los numeros aleatorios
