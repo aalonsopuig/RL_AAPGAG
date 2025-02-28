@@ -582,3 +582,160 @@ class FrozenAgentMC_Off_Q:
             done = terminated or truncated
         return pi_star, actions
 
+class FrozenAgentSARSA:
+    def __init__(self, env, epsilon: float, alpha: float, discount_factor: float = 0.95):
+        self._epsilon = epsilon
+        self._discount_factor = discount_factor
+        self._alpha=alpha
+        self.env = env
+        self.initAgent()
+
+    def initAgent(self):
+        self.alpha = self._alpha
+        self.epsilon = self._epsilon
+        self.discount_factor = self._discount_factor
+        self.nA = self.env.action_space.n
+        #inicializamos Q con valores aleatorios
+        self.Q = np.ones((self.env.observation_space.n, self.nA))
+        #self.Q = np.random.randn(self.env.observation_space.n, self.nA)
+        #ponemos a 0 la Q de los estados terminales
+        mapa_lineal = self.env.unwrapped.desc.flatten().astype(str).tolist()
+        for index, valor in enumerate(mapa_lineal):
+            if valor=='G':
+                self.Q[index]=np.zeros(self.nA)
+        
+        self.episode = []
+        self.stats = 0.0
+        self.episodes = 0.0
+        self.list_stats = [self.stats]
+        self.list_episodes = [self.episodes]
+        self.numEpisodes = 0
+
+    def initEpisode(self):
+        self.G=0
+        self.length=0
+
+    def get_action(self, env, state: tuple[int]) -> int:
+        best_action = np.argmax(self.Q[state])
+        pi_A = np.ones(self.nA, dtype=float) * self.epsilon / self.nA
+        pi_A[best_action] += (1.0 - self.epsilon)
+        return np.random.choice(np.arange(self.nA), p=pi_A)
+        '''
+        if np.random.randn()<self.epsilon:
+            return np.random.choice(np.arange(self.nA))
+        else:
+            return np.argmax(self.Q[state])
+        '''
+
+    def updateStep(self, state: tuple[int], action: int, reward: float, terminated: bool, next_state: tuple[int]):
+        self.G = self.discount_factor * self.G + reward
+        self.length+=1
+        if not terminated:
+            next_action = self.get_action(self.env,next_state)
+            self.Q[state, action] = self.Q[state, action] + self.alpha * ( reward + self.discount_factor * self.Q[next_state,next_action] - self.Q[state, action])
+        else:
+            self.Q[state, action] = self.Q[state, action] + self.alpha * ( reward - self.Q[state, action])
+
+    def updateEpisode(self):
+        self.stats += self.G
+        self.episodes += self.length
+        self.list_stats.append(self.stats/(self.numEpisodes+1))
+        self.list_episodes.append(self.episodes/(self.numEpisodes+1))
+        self.numEpisodes += 1
+
+    def decay_epsilon(self):
+        self.epsilon = min(1.0, 1000.0/(self.numEpisodes+1))
+
+    # Política Greedy a partir de los valones Q. Se usa para mostrar la solución.
+    def pi_star_from_Q(self, env, Q):
+        done = False
+        pi_star = np.zeros([env.observation_space.n, env.action_space.n])
+        state, info = env.reset() # start in top-left, = 0
+        actions = ""
+        while not done:
+            action = np.argmax(Q[state, :])
+            actions += f"{action}, "
+            pi_star[state,action] = action
+            state, reward, terminated, truncated, info = env.step(action)
+            done = terminated or truncated
+        return pi_star, actions
+
+class FrozenAgentQ_Learning:
+    def __init__(self, env, epsilon: float, alpha: float, discount_factor: float = 0.95):
+        self._epsilon = epsilon
+        self._discount_factor = discount_factor
+        self._alpha=alpha
+        self.env = env
+        self.initAgent()
+
+    def initAgent(self):
+        self.alpha = self._alpha
+        self.epsilon = self._epsilon
+        self.discount_factor = self._discount_factor
+        self.nA = self.env.action_space.n
+        #inicializamos Q con valores aleatorios
+        #self.Q = np.zeros((self.env.observation_space.n, self.nA))
+        self.Q = np.ones((self.env.observation_space.n, self.nA))
+        #ponemos a 0 la Q de los estados terminales
+        mapa_lineal = self.env.unwrapped.desc.flatten().astype(str).tolist()
+        for index, valor in enumerate(mapa_lineal):
+            if valor=='G':
+                self.Q[index]=np.zeros(self.nA)
+        
+        self.episode = []
+        self.stats = 0.0
+        self.episodes = 0.0
+        self.list_stats = [self.stats]
+        self.list_episodes = [self.episodes]
+        self.numEpisodes = 0
+
+    def initEpisode(self):
+        self.G=0
+        self.length=0
+
+    def get_action(self, env, state: tuple[int]) -> int:
+        best_action = np.argmax(self.Q[state])
+        pi_A = np.ones(self.nA, dtype=float) * self.epsilon / self.nA
+        pi_A[best_action] += (1.0 - self.epsilon)
+        return np.random.choice(np.arange(self.nA), p=pi_A)
+        '''
+        if np.random.randn()<self.epsilon:
+            return np.random.choice(np.arange(self.nA))
+        else:
+            return np.argmax(self.Q[state])
+        '''
+        
+    def updateStep(self, state: tuple[int], action: int, reward: float, terminated: bool, next_state: tuple[int]):
+        self.G = self.discount_factor * self.G + reward
+        self.length+=1
+        if not terminated:
+            next_action = self.get_action(self.env,next_state)
+            maxQ = np.max(self.Q[next_state])
+            self.Q[state, action] = self.Q[state, action] + self.alpha * ( reward + self.discount_factor * maxQ - self.Q[state, action])
+        else:
+            self.Q[state, action] = self.Q[state, action] + self.alpha * ( reward - self.Q[state, action])
+
+    def updateEpisode(self):
+        self.stats += self.G
+        self.episodes += self.length
+        self.list_stats.append(self.stats/(self.numEpisodes+1))
+        self.list_episodes.append(self.episodes/(self.numEpisodes+1))
+        self.numEpisodes += 1
+
+    def decay_epsilon(self):
+        self.epsilon = min(1.0, 1000.0/(self.numEpisodes+1))
+
+    # Política Greedy a partir de los valones Q. Se usa para mostrar la solución.
+    def pi_star_from_Q(self, env, Q):
+        done = False
+        pi_star = np.zeros([env.observation_space.n, env.action_space.n])
+        state, info = env.reset() # start in top-left, = 0
+        actions = ""
+        while not done:
+            action = np.argmax(Q[state, :])
+            actions += f"{action}, "
+            pi_star[state,action] = action
+            state, reward, terminated, truncated, info = env.step(action)
+            done = terminated or truncated
+        return pi_star, actions
+
