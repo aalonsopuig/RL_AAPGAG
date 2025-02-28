@@ -59,14 +59,16 @@ def train_agent(agent, env, num_episodes=5000, decay=False, semilla=1):
             if decay:
                 agent.decay_epsilon()
             action = agent.get_action(env, state)
+            
             next_state, reward, terminated, truncated, info = env.step(action)
 
             # update the agent
             agent.updateStep(state, action, reward, terminated, next_state)
-
+            
             # update if the environment is done and the current state
             done = terminated or truncated
             state = next_state
+            
         t1 = time.time_ns()
 
         #después de acabar el episodio actualizo la Q y el epsilon
@@ -105,28 +107,33 @@ def plot(agent):
   plt.tight_layout()
   plt.show()  
 
+
+
 #inicializo los numeros aleatorios
 setSemilla(semilla)
 
 # hyperparameters
-n_episodes = 15000
-start_epsilon = 0.4
-discount_factor = 1.0
+n_episodes = 50000
+start_epsilon = 0.1
+discount_factor = 0.99
 
 #agent4 = FrozenAgent.FrozenAgentMC_On_All(
 #agent4 = FrozenAgent.FrozenAgentMC_On_First(
 #agent4 = FrozenAgent.FrozenAgentGreedy(
-agent4 = FrozenAgent.FrozenAgentMC_Off_Q(
+#agent4 = FrozenAgent.FrozenAgentMC_Off_Q(
+#agent4 = FrozenAgent.FrozenAgentSARSA(
+agent4 = FrozenAgent.FrozenAgentQ_Learning(
     env=env4,
     epsilon=start_epsilon,
     discount_factor=discount_factor,
+    alpha=0.1
 )
 
 train_agent(agent4, env4, num_episodes=n_episodes, decay=False, semilla=semilla)
 
 
 
-
+'''
 agent4b = FrozenAgent.FrozenAgentMC_On_First(
     env=env4,
     epsilon=start_epsilon,
@@ -142,8 +149,8 @@ print(f"Valores Q para cada estado:\n {agent4.Q}")
 print(f"Valores Qb para cada estado:\n {agent4b.Q}")
 print(f"Valores Q-Qb para cada estado:\n {diff}")
 exit()
-
-#plot(agent4)
+'''
+plot(agent4)
 print(f"Máxima proporcion: {agent4.list_stats[-1]}")
 
 LEFT, DOWN, RIGHT, UP = 0,1,2,3
