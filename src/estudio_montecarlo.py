@@ -109,24 +109,41 @@ def plot(agent):
 setSemilla(semilla)
 
 # hyperparameters
-n_episodes = 50000
+n_episodes = 15000
 start_epsilon = 0.4
 discount_factor = 1.0
 
 #agent4 = FrozenAgent.FrozenAgentMC_On_All(
 #agent4 = FrozenAgent.FrozenAgentMC_On_First(
 #agent4 = FrozenAgent.FrozenAgentGreedy(
-agent4 = FrozenAgent.FrozenAgentMC_Off_All(
+agent4 = FrozenAgent.FrozenAgentMC_Off_Q(
     env=env4,
     epsilon=start_epsilon,
     discount_factor=discount_factor,
-    p=0.1
 )
 
 train_agent(agent4, env4, num_episodes=n_episodes, decay=False, semilla=semilla)
 
 
-plot(agent4)
+
+
+agent4b = FrozenAgent.FrozenAgentMC_On_First(
+    env=env4,
+    epsilon=start_epsilon,
+    discount_factor=discount_factor,
+)
+
+train_agent(agent4b, env4, num_episodes=n_episodes, decay=False, semilla=semilla)
+
+np.set_printoptions(precision=6)
+diff=np.array(agent4b.Q-agent4.Q)
+print(type(diff))
+print(f"Valores Q para cada estado:\n {agent4.Q}")
+print(f"Valores Qb para cada estado:\n {agent4b.Q}")
+print(f"Valores Q-Qb para cada estado:\n {diff}")
+exit()
+
+#plot(agent4)
 print(f"Máxima proporcion: {agent4.list_stats[-1]}")
 
 LEFT, DOWN, RIGHT, UP = 0,1,2,3
