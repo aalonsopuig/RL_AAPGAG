@@ -406,17 +406,11 @@ class FrozenAgentMC_Off_Pi:
         #inicializamos Q con valores aleatorios
         self.Q = np.random.randn(self.env.observation_space.n, self.nA)
         self.C = np.zeros((self.env.observation_space.n, self.nA))     #acumulado del muestreo de importancia
-        self.returns = np.zeros((self.env.observation_space.n, self.nA))  # Almacena la suma de todas las recompensas por estado-acción
-        self.nreturns = np.zeros((self.env.observation_space.n, self.nA))  # Almacena la cantidad de elementos de todas las recompensas por estado-acción
-        #definimos una política soft
-        self.policy = np.ones((self.env.observation_space.n, self.nA)) / self.nA
-        self.updatePolicy()
+        #definimos la política en base a argmax_a(Q(S,a))
+        self.policy = np.ones(self.env.observation_space.n)
+        for state in range(self.env.observation_space.n):
+            self.policy[state] = np.argmax(self.Q[state])
         self.bpolicy = np.ones((self.env.observation_space.n, self.nA)) / self.nA   #política b
-        #para optimizar el cálculo de primera visita
-        self.visited=set()
-        
-        # Número de visitas.
-        self.n_visits = np.zeros([self.env.observation_space.n, self.nA])
         
         self.episode = []
         self.stats = 0.0
@@ -451,8 +445,7 @@ class FrozenAgentMC_Off_Pi:
             self.Q[state, action] = self.Q[state, action] + (W/self.C[state, action]) * (G - self.Q[state, action])
             
             best_action = np.argmax(self.Q[state])
-            self.policy[state] = self.epsilon / self.nA
-            self.policy[state, best_action] += (1 - self.epsilon)
+            self.policy[state] = best_action
             
             if action!=best_action:
                 break
@@ -467,12 +460,6 @@ class FrozenAgentMC_Off_Pi:
 
     def decay_epsilon(self):
         self.epsilon = min(1.0, 1000.0/(self.numEpisodes+1))
-
-    def updatePolicy(self):
-        for state in range(self.env.observation_space.n):
-            best_action = np.argmax(self.Q[state])
-            self.policy[state] = self.epsilon / self.nA
-            self.policy[state, best_action] += (1 - self.epsilon)
 
     def random_epsilon_greedy_policy(self, state):
         pi_A = np.ones(self.nA, dtype=float) * self.epsilon / self.nA
