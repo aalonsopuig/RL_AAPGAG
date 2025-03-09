@@ -538,7 +538,7 @@ class FrozenAgentSARSA:
     def get_action(self, env, state: tuple[int]) -> int:
         best_action = np.argmax(self.Q[state])
         pi_A = np.ones(self.nA, dtype=float) * self.epsilon / self.nA
-        pi_A[best_action] = (1.0 - self.epsilon)
+        pi_A[best_action] += (1.0 - self.epsilon)
         return np.random.choice(np.arange(self.nA), p=pi_A)
 
     def updateStep(self, state: tuple[int], action: int, reward: float, terminated: bool, next_state: tuple[int]):

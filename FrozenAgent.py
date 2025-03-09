@@ -457,111 +457,7 @@ class FrozenAgentMC_Off_Pi:
             if action!=best_action:
                 break
             
-            W = W * self.policy[state,action] / self.bpolicy[state,action]
-        
-        self.stats += G
-        self.episodes += len(self.episode)
-        self.list_stats.append(self.stats/(self.numEpisodes+1))
-        self.list_episodes.append(self.episodes/(self.numEpisodes+1))
-        self.numEpisodes += 1
-
-    def decay_epsilon(self):
-        self.epsilon = min(1.0, 1000.0/(self.numEpisodes+1))
-
-    def updatePolicy(self):
-        for state in range(self.env.observation_space.n):
-            best_action = np.argmax(self.Q[state])
-            self.policy[state] = self.epsilon / self.nA
-            self.policy[state, best_action] += (1 - self.epsilon)
-
-    def random_epsilon_greedy_policy(self, state):
-        pi_A = np.ones(self.nA, dtype=float) * self.epsilon / self.nA
-        best_action = np.argmax(self.Q[state])
-        pi_A[best_action] += (1.0 - self.epsilon)
-        return pi_A
-
-    def epsilon_greedy_policy(self, state):
-        pi_A = self.random_epsilon_greedy_policy(state)
-        return np.random.choice(np.arange(self.nA), p=pi_A)
-
-    # Política Greedy a partir de los valones Q. Se usa para mostrar la solución.
-    def pi_star_from_Q(self, env, Q):
-        done = False
-        pi_star = np.zeros([env.observation_space.n, env.action_space.n])
-        state, info = env.reset() # start in top-left, = 0
-        actions = ""
-        while not done:
-            action = np.argmax(Q[state, :])
-            actions += f"{action}, "
-            pi_star[state,action] = action
-            state, reward, terminated, truncated, info = env.step(action)
-            done = terminated or truncated
-        return pi_star, actions
-
-class FrozenAgentMC_Off_Q:
-    def __init__(self, env, epsilon: float, discount_factor: float = 0.95):
-        self.descripcion=f"FrozenAgentMC_Off_Q. epsilon={epsilon} discount_factor={discount_factor}"
-        self._epsilon = epsilon
-        self._discount_factor = discount_factor
-        self.env = env
-        self.initAgent()
-
-    def __str__(self):
-        return self.descripcion
-
-    def initAgent(self):
-        self.epsilon = self._epsilon
-        self.discount_factor = self._discount_factor
-        self.nA = self.env.action_space.n
-        #inicializamos Q con valores aleatorios
-        self.Q = np.random.randn(self.env.observation_space.n, self.nA)
-        self.C = np.zeros((self.env.observation_space.n, self.nA))     #acumulado del muestreo de importancia
-        self.returns = np.zeros((self.env.observation_space.n, self.nA))  # Almacena la suma de todas las recompensas por estado-acción
-        self.nreturns = np.zeros((self.env.observation_space.n, self.nA))  # Almacena la cantidad de elementos de todas las recompensas por estado-acción
-        #definimos una política soft
-        self.policy = np.ones((self.env.observation_space.n, self.nA)) / self.nA
-        self.updatePolicy()
-        self.bpolicy = np.ones((self.env.observation_space.n, self.nA)) / self.nA   #política b
-        #para optimizar el cálculo de primera visita
-        self.visited=set()
-        
-        # Número de visitas.
-        self.n_visits = np.zeros([self.env.observation_space.n, self.nA])
-        
-        self.episode = []
-        self.stats = 0.0
-        self.episodes = 0.0
-        self.list_stats = [self.stats]
-        self.list_episodes = [self.episodes]
-        self.numEpisodes = 0
-
-    def initEpisode(self):
-        self.episode = []
-        #redefino una política b a partir de pi 
-        for state in range(self.env.observation_space.n):
-            best_action = np.argmax(self.Q[state])
-            self.bpolicy[state] = self.epsilon / self.nA
-            self.bpolicy[state, best_action] += (1 - self.epsilon)
-        
-
-    def get_action(self, env, state: tuple[int]) -> int:
-        return np.random.choice(np.arange(self.nA), p=self.bpolicy[state])      #tomo la acción en base a la bpolitica
-        #return np.argmax(self.Q[state])
-        #return self.epsilon_greedy_policy(state)
-
-    def updateStep(self, state: tuple[int], action: int, reward: float, terminated: bool, next_state: tuple[int]):
-        self.episode.append((state, action, reward))
-
-    def updateEpisode(self):
-        G = 0  # Retorno acumulado
-        W = 1.0 #proporción 
-        for (state, action, reward) in self.episode[::-1]:
-            G = self.discount_factor * G + reward
-            self.C[state, action] = self.C[state, action] + W
-            self.Q[state, action] = self.Q[state, action] + (W/self.C[state, action]) * (G - self.Q[state, action])
-            W = W * self.policy[state,action] / self.bpolicy[state,action]
-            if abs(W)<0.0000000001: #esto significa w==0 pero robusto numéricamente
-                break
+            W = W / self.bpolicy[state,action]
         
         self.stats += G
         self.episodes += len(self.episode)
@@ -642,14 +538,8 @@ class FrozenAgentSARSA:
     def get_action(self, env, state: tuple[int]) -> int:
         best_action = np.argmax(self.Q[state])
         pi_A = np.ones(self.nA, dtype=float) * self.epsilon / self.nA
-        pi_A[best_action] += (1.0 - self.epsilon)
+        pi_A[best_action] = (1.0 - self.epsilon)
         return np.random.choice(np.arange(self.nA), p=pi_A)
-        '''
-        if np.random.randn()<self.epsilon:
-            return np.random.choice(np.arange(self.nA))
-        else:
-            return np.argmax(self.Q[state])
-        '''
 
     def updateStep(self, state: tuple[int], action: int, reward: float, terminated: bool, next_state: tuple[int]):
         self.G = self.discount_factor * self.G + reward
