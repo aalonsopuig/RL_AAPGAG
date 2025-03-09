@@ -12,10 +12,27 @@ y otras técnicas de control con aproximaciones como SARSA semi-gradiente y Deep
 
 ## Estructura
 [Explicación de la organización del repositorio]
+
 ## Instalación y Uso
-[Instrucciones si son necesarias]
-## Tecnologías Utilizadas
-[Lista de lenguajes, frameworks, etc.]
+El notebook **main.ipynb** es el punto de inicio del proyecto. Desde él, se proporciona acceso a los notebooks de los estudios.  
 
+Para poner en marcha la ejecución del proyecto, simplemente sigue estos pasos:  
 
-Esto es una prueba de modificación
+1. **Abrir main.ipynb** utilizando el siguiente enlace para Google Colab: [Open in Colab](https://colab.research.google.com/github/aalonsopuig/RL_AAPGAG/blob/main/main.ipynb) 
+
+2. **Acceder a los notebooks de los experimentos**:  
+   Al finalizar la ejecución, en la parte inferior del notebook principal, aparecerán enlaces directos a los notebooks individuales para cada estudio:  
+     - **Primer Agente**  
+     - **Estudio Monte Carlo**  
+     - **Estudio Diferencias Temporales**
+       
+   Basta con hacer clic en cualquier enlace para abrir y ejecutar el estudio correspondiente.
+
+3. **Ejecutar todas las celdas** en orden automático:  
+   En la barra de menú de Colab, haz clic en **Entorno de ejecución > Ejecutar todas**.  
+    
+
+## Tecnologías Utilizadas  
+- **Lenguaje:** Python 3.x  
+- **Bibliotecas:** NumPy, Matplotlib, Pandas, SciPy, gymnasium, tqdm, seaborn  
+- **Entorno de ejecución:** Jupyter Notebook, Google Colab 
