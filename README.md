@@ -11,7 +11,15 @@ Se desarrollarán estudios comparativos de diferentes técnicas, como Monte Carl
 y otras técnicas de control con aproximaciones como SARSA semi-gradiente y Deep Q-Learning.
 
 ## Estructura
-[Explicación de la organización del repositorio]
+El repositorio contiene los siguientes archivos:
+- README.md: este fichero
+- main.ipynb: notebook principal. Desde éste se puede ejecutar en colab y navegar hacia los otros
+- primer_agente.ipynb: notebook básico que implementa el agente del tutor
+- estudio_montecarlo.ipynb: notebook comparativo de diferentes técnicas de Monte Carlo
+- estudio_td.ipynb: notebook comparativo entre SARSA y Q-Learning
+- estudio_convergencia_q.ipynb: notebook que muestra la convergencia de la matriz Q para una misma política y diferentes agentes
+- src/FrozenAgent.py: clase que implementa todos los agentes estudiados
+- doc/Técnicas Básicas de Aprendizaje por refuerzo.pdf: documento explicativo de los estudios realizados
 
 ## Instalación y Uso
 El notebook **main.ipynb** es el punto de inicio del proyecto. Desde él, se proporciona acceso a los notebooks de los estudios.  
@@ -25,6 +33,7 @@ Para poner en marcha la ejecución del proyecto, simplemente sigue estos pasos:
      - **Primer Agente**  
      - **Estudio Monte Carlo**  
      - **Estudio Diferencias Temporales**
+     - **Convergencia de Q**
        
    Basta con hacer clic en cualquier enlace para abrir y ejecutar el estudio correspondiente.
 
